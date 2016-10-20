@@ -131,12 +131,6 @@ function createTaskIterator({context, fn, args}) {
       })())
 }
 
-function wrapHelper(helper) {
-  return {
-    fn: helper
-  }
-}
-
 export default function proc(
   iterator,
   subscribe = () => noop,
@@ -373,9 +367,7 @@ export default function proc(
     return (
       // Non declarative effect
         is.promise(effect)                                   ? resolvePromise(effect, currCb)
-      : is.helper(effect)                                    ? runForkEffect(wrapHelper(effect), effectId, currCb)
       : is.iterator(effect)                                  ? resolveIterator(effect, effectId, name, currCb)
-
 
       // declarative effects
       : is.array(effect)                                     ? runParallelEffect(effect, effectId, currCb)

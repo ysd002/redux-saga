@@ -1,6 +1,5 @@
 export const sym = id => `@@redux-saga/${id}`
 export const TASK  = sym('TASK')
-export const HELPER  = sym('HELPER')
 export const MATCH = sym('MATCH')
 export const CANCEL = sym('cancelPromise')
 export const SAGA_ACTION = sym('SAGA_ACTION')
@@ -31,8 +30,7 @@ export const is = {
   observable: ob => ob && is.func(ob.subscribe),
   buffer    : buf => buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put),
   pattern   : pat => pat && ((typeof pat === 'string') || (typeof pat === 'symbol') || is.func(pat) || is.array(pat)),
-  channel   : ch => ch && is.func(ch.take) && is.func(ch.close),
-  helper    : it => it && it[HELPER]
+  channel   : ch => ch && is.func(ch.take) && is.func(ch.close)
 }
 
 export function remove(array, item) {
@@ -95,12 +93,9 @@ export const uid = autoInc()
 
 const kThrow = err => { throw err }
 const kReturn = value => ({value, done: true})
-export function makeIterator(next, thro = kThrow, name = '', isHelper) {
+export function makeIterator(next, thro = kThrow, name = '') {
   const iterator = {name, next, throw: thro, return: kReturn}
 
-  if (isHelper) {
-    iterator[HELPER] = true
-  }
   if(typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = () => iterator
   }
@@ -112,12 +107,19 @@ export function makeIterator(next, thro = kThrow, name = '', isHelper) {
   (with expandable error stack traces), or in a node.js environment
   (text-only log output)
  **/
-export function log(level, message, error) {
+export function log(level, message, error = '') {
   /*eslint-disable no-console*/
   if(typeof window === 'undefined') {
     console.log(`redux-saga ${level}: ${message}\n${(error && error.stack) || error}`)
   } else {
     console[level](message, error)
+  }
+}
+
+export function deprecate(fn, deprecationWarning) {
+  return (...args) => {
+    if (isDev) log('warn', deprecationWarning)
+    return fn(...args)
   }
 }
 
